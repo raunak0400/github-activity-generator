@@ -165,7 +165,7 @@ def generate_natural_contributions(repository_url, start_date_str, end_date_str)
                 elif time_choice < 0.9:
                     hour = random.randint(18, 23)  # 6 PM - 11 PM
                 else:
-                    hour = random.randint(23, 2)  # 11 PM - 2 AM
+                    hour = random.randint(0, 2)  # 12 AM - 2 AM
                 
                 minute = random.randint(0, 59)
                 commit_time = current_date.replace(hour=hour, minute=minute)
