@@ -71,14 +71,26 @@ def calculate_commits_per_day(date, start_date, end_date):
     # Calculate progress (0 to 1)
     progress = current_day / total_days if total_days > 0 else 0
     
-    # More natural progression: very slow start, moderate middle, rapid end
+    # Check if it's July 2025 or later for aggressive contributions
+    is_aggressive_period = (date.year == 2025 and date.month >= 7)
+    
+    # Check if it's very recent (last 30 days) for super aggressive
+    days_until_end = (end_date - date).days
+    is_super_recent = days_until_end <= 30
+    
     if progress < 0.3:  # First 30% of time (2023 mostly)
         # Very low activity: 0-2 commits per day
         base_commits = random.randint(0, 2)
     elif progress < 0.7:  # 30-70% of time (2024 mostly)
         # Moderate activity: 1-5 commits per day
         base_commits = random.randint(1, 5)
-    else:  # Last 30% of time (2025 mostly)
+    elif is_super_recent:  # Last 30 days - SUPER AGGRESSIVE
+        # Extremely high activity: 15-25 commits per day
+        base_commits = random.randint(15, 25)
+    elif is_aggressive_period:  # July 2025 onwards - AGGRESSIVE
+        # Very high activity: 8-18 commits per day
+        base_commits = random.randint(8, 18)
+    else:  # Rest of 2025
         # High activity: 3-12 commits per day
         base_commits = random.randint(3, 12)
     
@@ -117,6 +129,12 @@ def generate_natural_contributions(repository_url, start_date_str, end_date_str)
     print("- 2023: March and April (no contributions)")
     print("- 2024: April, May, and last 15 days of December (no contributions)")
     print("- 2025: First and last 15 days of February (no contributions)")
+    print("\nContribution patterns:")
+    print("- 2023: Very low activity (0-2 commits/day)")
+    print("- 2024: Moderate activity (1-5 commits/day)")
+    print("- 2025 (Jan-Jun): High activity (3-12 commits/day)")
+    print("- 2025 (Jul-Aug): AGGRESSIVE (8-18 commits/day)")
+    print("- 2025 (Last 30 days): SUPER AGGRESSIVE (15-25 commits/day)")
     
     # Initialize git repository
     if not os.path.exists(".git"):
