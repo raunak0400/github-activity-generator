@@ -9,7 +9,6 @@ import random
 import subprocess
 import argparse
 from datetime import datetime, timedelta
-import math
 
 def run_command(command):
     """Run a shell command and return the output"""
@@ -23,20 +22,14 @@ def run_command(command):
 
 def create_commit(date, commit_count):
     """Create a commit for a specific date"""
-    # Create or modify a file
     filename = "contributions.txt"
     
-    # Add content to the file
     with open(filename, "a") as f:
         f.write(f"Contribution: {date.strftime('%Y-%m-%d %H:%M')} - Commit #{commit_count}\n")
     
-    # Stage the file
     run_command("git add .")
-    
-    # Create commit with the specific date
     commit_message = f"Contribution: {date.strftime('%Y-%m-%d %H:%M')}"
     date_str = date.strftime('%Y-%m-%d %H:%M:%S')
-    
     run_command(f'git commit --date="{date_str}" -m "{commit_message}"')
 
 def is_break_period(date):
@@ -67,22 +60,17 @@ def calculate_commits_per_day(date, start_date, end_date):
     """Calculate number of commits for a given date based on natural progression"""
     total_days = (end_date - start_date).days
     current_day = (date - start_date).days
-    
-    # Calculate progress (0 to 1)
     progress = current_day / total_days if total_days > 0 else 0
     
-    # More natural progression: very slow start, moderate middle, rapid end
+    # Natural progression: very slow start, moderate middle, rapid end
     if progress < 0.3:  # First 30% of time (2023 mostly)
-        # Very low activity: 0-2 commits per day
         base_commits = random.randint(0, 2)
     elif progress < 0.7:  # 30-70% of time (2024 mostly)
-        # Moderate activity: 1-5 commits per day
         base_commits = random.randint(1, 5)
     else:  # Last 30% of time (2025 mostly)
-        # High activity: 3-12 commits per day
         base_commits = random.randint(3, 12)
     
-    # Add some weekly patterns (more active on weekdays)
+    # Weekday/weekend patterns
     if date.weekday() < 5:  # Weekdays
         weekday_boost = random.uniform(1.0, 1.5)
         base_commits = int(base_commits * weekday_boost)
@@ -90,16 +78,14 @@ def calculate_commits_per_day(date, start_date, end_date):
         weekend_reduction = random.uniform(0.3, 0.8)
         base_commits = int(base_commits * weekend_reduction)
     
-    # Add monthly patterns (more active in middle of month)
+    # Monthly patterns (more active in middle of month)
     if 5 <= date.day <= 25:
         monthly_boost = random.uniform(1.0, 1.3)
         base_commits = int(base_commits * monthly_boost)
     
-    # Add some randomness for natural variation
+    # Natural variation
     variation = random.uniform(0.5, 1.5)
     base_commits = int(base_commits * variation)
-    
-    # Ensure minimum and maximum bounds
     base_commits = max(0, min(15, base_commits))
     
     return base_commits
@@ -107,7 +93,6 @@ def calculate_commits_per_day(date, start_date, end_date):
 def generate_natural_contributions(repository_url, start_date_str, end_date_str):
     """Generate natural progressive contributions over the specified period"""
     
-    # Parse dates
     start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
     end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
     
@@ -154,11 +139,7 @@ def generate_natural_contributions(repository_url, start_date_str, end_date_str)
             
             # Generate commits for this day
             for i in range(commits_today):
-                # More realistic time distribution
-                # 60% chance of working hours (9 AM - 6 PM)
-                # 30% chance of evening hours (6 PM - 11 PM)
-                # 10% chance of late night (11 PM - 2 AM)
-                
+                # Realistic time distribution
                 time_choice = random.random()
                 if time_choice < 0.6:
                     hour = random.randint(9, 18)  # 9 AM - 6 PM
@@ -172,7 +153,6 @@ def generate_natural_contributions(repository_url, start_date_str, end_date_str)
                 total_commits += 1
                 
                 create_commit(commit_time, total_commits)
-                
                 print(f"Created commit #{total_commits} for {commit_time.strftime('%Y-%m-%d %H:%M')}")
         
         current_date += timedelta(days=1)
@@ -181,7 +161,8 @@ def generate_natural_contributions(repository_url, start_date_str, end_date_str)
     print(f"Total days processed: {total_days_processed}")
     print(f"Days with contributions: {days_with_commits}")
     print(f"Total commits generated: {total_commits}")
-    print(f"Average commits per active day: {total_commits/days_with_commits:.1f}" if days_with_commits > 0 else "No commits generated")
+    if days_with_commits > 0:
+        print(f"Average commits per active day: {total_commits/days_with_commits:.1f}")
     
     # Set up remote repository
     if repository_url:
@@ -208,7 +189,7 @@ def main():
     
     if not args.repository:
         print("Please provide a repository URL")
-        print("Usage: python progressive_contribute.py --repository=https://github.com/username/repo.git")
+        print("Usage: python natural_contribute.py --repository=https://github.com/username/repo.git")
         return
     
     generate_natural_contributions(args.repository, args.start_date, args.end_date)
